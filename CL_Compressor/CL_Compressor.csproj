@@ -5,11 +5,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="CL_Compressor">
-      <HintPath>bin\Debug\net8.0\CL_Compressor.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
+	
 </Project>
