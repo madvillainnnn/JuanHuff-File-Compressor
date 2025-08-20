@@ -5,6 +5,7 @@ namespace WF_Compressor
         // Propiedades para que el Controlador pueda acceder a los eventos
         public event EventHandler? SelectFileButtonClick;
         public event EventHandler? CompressButtonClick;
+        public event EventHandler? DecompressButtonClick;
         public event DragEventHandler? FileDropped;
 
         // UNICO CONSTRUCTOR EXISTETE
@@ -16,6 +17,7 @@ namespace WF_Compressor
             this.selectFileButton.Click += (s, e) => SelectFileButtonClick?.Invoke(s, e);
             this.compressButton.Click += (s, e) => CompressButtonClick?.Invoke(s, e);
             this.dragDropPanel.DragDrop += (s, e) => FileDropped?.Invoke(s, e);
+            this.decompressButton.Click += (s, e) => DecompressButtonClick?.Invoke(s, e);
         }
 
         // --- Métodos públicos para que el Controlador actualice la Vista ---
@@ -50,6 +52,18 @@ namespace WF_Compressor
             else
             {
                 compressButton.Enabled = isEnabled;
+            }
+        }
+
+        public void SetDecompressButtonEnabled(bool isEnabled)
+        {
+            if (decompressButton.InvokeRequired)
+            {
+                decompressButton.Invoke(new Action(() => decompressButton.Enabled = isEnabled));
+            }
+            else
+            {
+                decompressButton.Enabled = isEnabled;
             }
         }
 

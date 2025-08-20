@@ -13,6 +13,7 @@
         private Panel panel2;
         private Button compressButton;
         private Button selectFileButton;
+        private Button decompressButton;
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -38,6 +39,7 @@
             dragDropPanel = new Panel();
             statusLabel = new Label();
             panel2 = new Panel();
+            decompressButton = new Button();
             selectFileButton = new Button();
             compressButton = new Button();
             dragDropPanel.SuspendLayout();
@@ -75,19 +77,32 @@
             // 
             panel2.AccessibleName = "secondaryPanel";
             panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(decompressButton);
             panel2.Controls.Add(selectFileButton);
             panel2.Controls.Add(compressButton);
             panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(0, 367);
+            panel2.Location = new Point(0, 322);
             panel2.Name = "panel2";
-            panel2.Size = new Size(798, 81);
+            panel2.Size = new Size(798, 126);
             panel2.TabIndex = 0;
+            // 
+            // decompressButton
+            // 
+            decompressButton.AccessibleName = "decompressButton";
+            decompressButton.Dock = DockStyle.Bottom;
+            decompressButton.Enabled = false;
+            decompressButton.Location = new Point(0, 40);
+            decompressButton.Name = "decompressButton";
+            decompressButton.Size = new Size(796, 42);
+            decompressButton.TabIndex = 2;
+            decompressButton.Text = "Descomprimir";
+            decompressButton.UseVisualStyleBackColor = true;
             // 
             // selectFileButton
             // 
             selectFileButton.AccessibleName = "selectFileButton";
-            selectFileButton.Dock = DockStyle.Bottom;
-            selectFileButton.Location = new Point(0, 3);
+            selectFileButton.Dock = DockStyle.Top;
+            selectFileButton.Location = new Point(0, 0);
             selectFileButton.Name = "selectFileButton";
             selectFileButton.Size = new Size(796, 40);
             selectFileButton.TabIndex = 1;
@@ -99,9 +114,9 @@
             compressButton.AccessibleName = "compressButton";
             compressButton.Dock = DockStyle.Bottom;
             compressButton.Enabled = false;
-            compressButton.Location = new Point(0, 43);
+            compressButton.Location = new Point(0, 82);
             compressButton.Name = "compressButton";
-            compressButton.Size = new Size(796, 36);
+            compressButton.Size = new Size(796, 42);
             compressButton.TabIndex = 0;
             compressButton.Text = "Comprimir";
             compressButton.UseVisualStyleBackColor = true;
@@ -121,6 +136,7 @@
         }
 
         #endregion
+
 
     }
 }

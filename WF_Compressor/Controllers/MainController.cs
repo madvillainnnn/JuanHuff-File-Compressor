@@ -29,6 +29,7 @@ namespace WF_Compressor.Controllers
             // Nos suscribimos a los eventos que la Vista dispara.
             _view.SelectFileButtonClick += OnSelectFileClick;
             _view.CompressButtonClick += OnCompressClick;
+            _view.DecompressButtonClick += OnDecompressClick;
             _view.FileDropped += OnFileDropped;
         }
 
@@ -37,11 +38,11 @@ namespace WF_Compressor.Controllers
         /// </summary>
         private void OnSelectFileClick(object? sender, EventArgs e)
         {
-            // Usamos un OpenFileDialog para que el usuario elija un archivo.
             using (var dialog = new OpenFileDialog())
             {
-                dialog.Filter = "Text Files (*.txt)|*.txt|All files (*.*)|*.*";
-                dialog.Title = "Selecciona un archivo de texto";
+                // Actualizamos el filtro para aceptar ambos tipos de archivo
+                dialog.Filter = "Archivos Soportados (*.txt, *.huff)|*.txt;*.huff|Todos los archivos (*.*)|*.*";
+                dialog.Title = "Selecciona un archivo";
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
@@ -97,7 +98,7 @@ namespace WF_Compressor.Controllers
                     var codes = _model.GenerateCodes(huffmanTree);
                     // ¡Aquí podrías necesitar también el árbol para descomprimir!
                     // Por simplicidad, solo guardamos los datos comprimidos.
-                    return _model.Compress(fileContent, codes);
+                    return _model.Compress(fileContent);
                 });
 
                 // Guardamos el archivo comprimido
@@ -117,20 +118,68 @@ namespace WF_Compressor.Controllers
         }
 
         /// <summary>
+        /// Manejador para el evento de clic en el botón "Descomprimir".
+        /// </summary>
+        private async void OnDecompressClick(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(_selectedFilePath))
+            {
+                MessageBox.Show("Por favor, selecciona un archivo primero.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            try
+            {
+                _view.UpdateStatus("Descomprimiendo... esto puede tardar.");
+
+                // Leemos todos los bytes del archivo .huff
+                byte[] compressedBytes = await File.ReadAllBytesAsync(_selectedFilePath);
+
+                // Llamamos a nuestro nuevo método en el modelo
+                string decompressedContent = await Task.Run(() => _model.Decompress(compressedBytes));
+
+                // Guardamos el archivo descomprimido
+                string decompressedFilePath = _selectedFilePath.Replace(".huff", "_descomprimido.txt");
+                await File.WriteAllTextAsync(decompressedFilePath, decompressedContent);
+
+                // Mensaje de éxito
+                _view.UpdateStatus($"¡Éxito! Archivo guardado en:\n{decompressedFilePath}");
+                MessageBox.Show($"Descompresión completada.\nArchivo guardado como: {Path.GetFileName(decompressedFilePath)}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ResetSelection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"El archivo está corrupto o no es un archivo .huff válido.\nError: {ex.Message}", "Error de Descompresión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _view.UpdateStatus("Error durante la descompresión.");
+            }
+        }
+
+        /// <summary>
         /// Método centralizado para manejar un archivo recién seleccionado.
         /// </summary>
         private void SetSelectedFile(string filePath)
         {
-            // Validamos que sea un .txt para evitar problemas
-            if (Path.GetExtension(filePath).ToLower() != ".txt")
-            {
-                MessageBox.Show("Por favor, selecciona un archivo con extensión .txt", "Archivo no válido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             _selectedFilePath = filePath;
-            _view.UpdateStatus($"Archivo seleccionado:\n{Path.GetFileName(_selectedFilePath)}");
-            _view.SetCompressButtonEnabled(true);
+            string extension = Path.GetExtension(filePath).ToLower();
+
+            // Desactivamos ambos botones antes de decidir
+            _view.SetCompressButtonEnabled(false);
+            _view.SetDecompressButtonEnabled(false); // Necesitarás añadir este método a tu MainForm
+
+            if (extension == ".txt")
+            {
+                _view.SetCompressButtonEnabled(true);
+                _view.UpdateStatus($"Archivo de texto seleccionado:\n{Path.GetFileName(_selectedFilePath)}");
+            }
+            else if (extension == ".huff")
+            {
+                _view.SetDecompressButtonEnabled(true);
+                _view.UpdateStatus($"Archivo comprimido seleccionado:\n{Path.GetFileName(_selectedFilePath)}");
+            }
+            else
+            {
+                _view.UpdateStatus($"Archivo no soportado:\n{Path.GetFileName(_selectedFilePath)}");
+            }
         }
 
         /// <summary>
