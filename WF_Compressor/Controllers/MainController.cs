@@ -69,46 +69,61 @@ namespace WF_Compressor.Controllers
         /// </summary>
         private async void OnCompressClick(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_selectedFilePath))
-            {
-                MessageBox.Show("Por favor, selecciona un archivo primero.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            if (string.IsNullOrEmpty(_selectedFilePath)) return;
 
             try
             {
-                // Actualizamos la vista para dar feedback
+                _view.ResetProgressAndStats();
                 _view.UpdateStatus("Leyendo archivo...");
+
+                long originalSize = new FileInfo(_selectedFilePath).Length;
                 string fileContent = await File.ReadAllTextAsync(_selectedFilePath);
 
                 if (string.IsNullOrEmpty(fileContent))
                 {
-                    MessageBox.Show("El archivo está vacío y no se puede comprimir.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("El archivo está vacío.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     _view.UpdateStatus("Archivo vacío. Selecciona otro.");
                     return;
                 }
 
-                _view.UpdateStatus("Comprimiendo... esto puede tardar un momento.");
+                // --- INICIO DE CAMBIOS ---
 
-                // Usamos Task.Run para ejecutar la lógica pesada en un hilo secundario
-                byte[] compressedData = await Task.Run(() =>
+                // 1. Preguntamos al usuario dónde guardar el archivo
+                using (var saveDialog = new SaveFileDialog())
                 {
-                    var frequencyTable = _model.BuildFrequencyTable(fileContent);
-                    var huffmanTree = _model.BuildHuffmanTree(frequencyTable);
-                    var codes = _model.GenerateCodes(huffmanTree);
-                    // ¡Aquí podrías necesitar también el árbol para descomprimir!
-                    // Por simplicidad, solo guardamos los datos comprimidos.
-                    return _model.Compress(fileContent);
-                });
+                    saveDialog.Filter = "Archivo Huffman (*.huff)|*.huff";
+                    saveDialog.Title = "Guardar archivo comprimido";
+                    // 2. Sugerimos un nombre limpio: "archivo.txt" se convierte en "archivo.huff"
+                    saveDialog.FileName = Path.GetFileNameWithoutExtension(_selectedFilePath) + ".huff";
 
-                // Guardamos el archivo comprimido
-                string compressedFilePath = _selectedFilePath + ".huff";
-                await File.WriteAllBytesAsync(compressedFilePath, compressedData);
+                    // Si el usuario presiona "Guardar"
+                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        _view.UpdateStatus("Comprimiendo...");
+                        var progress = new Progress<int>(percentage => _view.UpdateProgress(percentage));
+                        byte[] compressedData = await Task.Run(() => _model.Compress(fileContent, progress));
 
-                // Mostramos mensaje de éxito
-                _view.UpdateStatus($"¡Éxito! Archivo guardado en:\n{compressedFilePath}");
-                MessageBox.Show($"Compresión completada con éxito.\nArchivo guardado como: {Path.GetFileName(compressedFilePath)}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                ResetSelection();
+                        // 3. Usamos la ruta que el usuario eligió
+                        string compressedFilePath = saveDialog.FileName;
+                        await File.WriteAllBytesAsync(compressedFilePath, compressedData);
+                        long compressedSize = new FileInfo(compressedFilePath).Length;
+
+                        // Calculamos y mostramos las estadísticas
+                        double reduction = 100.0 - ((double)compressedSize / originalSize * 100.0);
+                        string stats = $"Tamaño Original: {originalSize / 1024.0:F2} KB\n" +
+                                       $"Tamaño Comprimido: {compressedSize / 1024.0:F2} KB\n" +
+                                       $"Ahorro: {reduction:F2}%";
+                        _view.DisplayStats(stats);
+
+                        MessageBox.Show($"Compresión completada.\n{stats}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ResetSelection();
+                    }
+                    else // Si el usuario cancela, no hacemos nada
+                    {
+                        _view.UpdateStatus("Compresión cancelada por el usuario.");
+                    }
+                }
+                // --- FIN DE CAMBIOS ---
             }
             catch (Exception ex)
             {
@@ -122,30 +137,48 @@ namespace WF_Compressor.Controllers
         /// </summary>
         private async void OnDecompressClick(object? sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_selectedFilePath))
-            {
-                MessageBox.Show("Por favor, selecciona un archivo primero.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            if (string.IsNullOrEmpty(_selectedFilePath)) return;
 
             try
             {
-                _view.UpdateStatus("Descomprimiendo... esto puede tardar.");
+                _view.ResetProgressAndStats();
+                _view.UpdateStatus("Descomprimiendo...");
 
-                // Leemos todos los bytes del archivo .huff
+                long originalSize = new FileInfo(_selectedFilePath).Length;
                 byte[] compressedBytes = await File.ReadAllBytesAsync(_selectedFilePath);
 
-                // Llamamos a nuestro nuevo método en el modelo
-                string decompressedContent = await Task.Run(() => _model.Decompress(compressedBytes));
+                // --- INICIO DE CAMBIOS ---
 
-                // Guardamos el archivo descomprimido
-                string decompressedFilePath = _selectedFilePath.Replace(".huff", "_descomprimido.txt");
-                await File.WriteAllTextAsync(decompressedFilePath, decompressedContent);
+                using (var saveDialog = new SaveFileDialog())
+                {
+                    saveDialog.Filter = "Archivo de Texto (*.txt)|*.txt";
+                    saveDialog.Title = "Guardar archivo descomprimido";
+                    // Sugerimos un nombre limpio para el archivo de salida
+                    saveDialog.FileName = Path.GetFileNameWithoutExtension(_selectedFilePath) + "_descomprimido.txt";
 
-                // Mensaje de éxito
-                _view.UpdateStatus($"¡Éxito! Archivo guardado en:\n{decompressedFilePath}");
-                MessageBox.Show($"Descompresión completada.\nArchivo guardado como: {Path.GetFileName(decompressedFilePath)}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                ResetSelection();
+                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        var progress = new Progress<int>(percentage => _view.UpdateProgress(percentage));
+                        string decompressedContent = await Task.Run(() => _model.Decompress(compressedBytes, progress));
+
+                        // Usamos la ruta elegida por el usuario
+                        string decompressedFilePath = saveDialog.FileName;
+                        await File.WriteAllTextAsync(decompressedFilePath, decompressedContent);
+                        long decompressedSize = new FileInfo(decompressedFilePath).Length;
+
+                        string stats = $"Tamaño Comprimido: {originalSize / 1024.0:F2} KB\n" +
+                                       $"Tamaño Original: {decompressedSize / 1024.0:F2} KB";
+                        _view.DisplayStats(stats);
+
+                        MessageBox.Show($"Descompresión completada.\n{stats}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ResetSelection();
+                    }
+                    else // Si el usuario cancela
+                    {
+                        _view.UpdateStatus("Descompresión cancelada por el usuario.");
+                    }
+                }
+                // --- FIN DE CAMBIOS ---
             }
             catch (Exception ex)
             {
@@ -189,7 +222,9 @@ namespace WF_Compressor.Controllers
         {
             _selectedFilePath = null;
             _view.SetCompressButtonEnabled(false);
-            _view.UpdateStatus("Arrastra un archivo .txt aquí o selecciónalo");
+            _view.SetDecompressButtonEnabled(false);
+            _view.ResetProgressAndStats(); // Añadimos esto para limpiar la UI
+            _view.UpdateStatus("Arrastra un archivo aquí o selecciónalo");
         }
     }
 }

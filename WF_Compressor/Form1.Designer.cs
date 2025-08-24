@@ -14,6 +14,8 @@
         private Button compressButton;
         private Button selectFileButton;
         private Button decompressButton;
+        private ProgressBar progressBar;
+        private Label statsLabel;
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -37,6 +39,8 @@
         private void InitializeComponent()
         {
             dragDropPanel = new Panel();
+            statsLabel = new Label();
+            progressBar = new ProgressBar();
             statusLabel = new Label();
             panel2 = new Panel();
             decompressButton = new Button();
@@ -51,6 +55,8 @@
             dragDropPanel.AccessibleName = "dragDropPanel";
             dragDropPanel.AllowDrop = true;
             dragDropPanel.BorderStyle = BorderStyle.FixedSingle;
+            dragDropPanel.Controls.Add(statsLabel);
+            dragDropPanel.Controls.Add(progressBar);
             dragDropPanel.Controls.Add(statusLabel);
             dragDropPanel.Controls.Add(panel2);
             dragDropPanel.Dock = DockStyle.Fill;
@@ -59,6 +65,28 @@
             dragDropPanel.Size = new Size(800, 450);
             dragDropPanel.TabIndex = 0;
             dragDropPanel.DragEnter += dragDropPanel_DragEnter;
+            // 
+            // statsLabel
+            // 
+            statsLabel.AccessibleName = "statsLabel";
+            statsLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            statsLabel.AutoSize = true;
+            statsLabel.Font = new Font("Arial Rounded MT Bold", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            statsLabel.Location = new Point(536, 218);
+            statsLabel.Name = "statsLabel";
+            statsLabel.Size = new Size(0, 28);
+            statsLabel.TabIndex = 3;
+            // 
+            // progressBar
+            // 
+            progressBar.AccessibleName = "progressBar";
+            progressBar.Dock = DockStyle.Bottom;
+            progressBar.Location = new Point(0, 288);
+            progressBar.Name = "progressBar";
+            progressBar.Size = new Size(798, 34);
+            progressBar.TabIndex = 2;
+            progressBar.Visible = false;
+            progressBar.Click += progressBar1_Click;
             // 
             // statusLabel
             // 
@@ -136,7 +164,6 @@
         }
 
         #endregion
-
 
     }
 }

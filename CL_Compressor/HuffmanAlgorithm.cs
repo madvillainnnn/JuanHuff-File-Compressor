@@ -16,30 +16,36 @@ namespace CL_Compressor
         /// </summary>
         /// <param name="text">El texto original a comprimir.</param>
         /// <returns>Un array de bytes que representa el archivo .huff completo (mapa + datos).</returns>
-        public byte[] Compress(string text)
+        public byte[] Compress(string text, IProgress<int> progress)
         {
-            // 1. Construir todo lo necesario como antes
             var frequencyTable = BuildFrequencyTable(text);
             var huffmanTree = BuildHuffmanTree(frequencyTable);
             var codes = GenerateCodes(huffmanTree);
 
-            // 2. Codificar el texto a una cadena de bits
             var stringBuilder = new StringBuilder();
+            int totalLength = text.Length;
+            int processedCount = 0;
+
             foreach (char symbol in text)
             {
                 stringBuilder.Append(codes[symbol]);
+                processedCount++;
+                // Reporta el progreso cada cierto número de caracteres para no ralentizar
+                if (processedCount % 1000 == 0)
+                {
+                    progress?.Report((processedCount * 100) / totalLength);
+                }
             }
-            string bitString = stringBuilder.ToString();
+            progress?.Report(100); // Reporta el 100% al final
 
-            // 3. Convertir la tabla de frecuencias a JSON (nuestro "mapa")
+            // ... (El resto del método sigue igual)
+            string bitString = stringBuilder.ToString();
             string headerJson = JsonSerializer.Serialize(frequencyTable);
             byte[] headerBytes = Encoding.UTF8.GetBytes(headerJson);
             byte[] headerLengthBytes = BitConverter.GetBytes(headerBytes.Length);
-
-            // 4. Convertir la cadena de bits a bytes de datos
             var dataBytes = new List<byte>();
             int padding = (8 - (bitString.Length % 8)) % 8;
-            dataBytes.Add((byte)padding); // El primer byte de datos nos dice el relleno
+            dataBytes.Add((byte)padding);
             for (int i = 0; i < bitString.Length; i += 8)
             {
                 string byteString = bitString.Length - i < 8
@@ -47,8 +53,6 @@ namespace CL_Compressor
                     : bitString.Substring(i, 8);
                 dataBytes.Add(Convert.ToByte(byteString, 2));
             }
-
-            // 5. Unir todo en un solo array de bytes: [Tamaño del Mapa] + [Mapa] + [Datos]
             return headerLengthBytes.Concat(headerBytes).Concat(dataBytes).ToArray();
         }
 
@@ -59,49 +63,45 @@ namespace CL_Compressor
         /// </summary>
         /// <param name="compressedFileBytes">El contenido completo del archivo .huff.</param>
         /// <returns>El texto original descomprimido.</returns>
-        public string Decompress(byte[] compressedFileBytes)
+        public string Decompress(byte[] compressedFileBytes, IProgress<int> progress)
         {
-            // 1. Leer el tamaño del mapa (los primeros 4 bytes)
+            // ... (La primera parte del método para leer el header es igual)
             int headerLength = BitConverter.ToInt32(compressedFileBytes, 0);
-
-            // 2. Leer el mapa JSON y deserializarlo de vuelta a un Diccionario
             string headerJson = Encoding.UTF8.GetString(compressedFileBytes, 4, headerLength);
             var frequencyTable = JsonSerializer.Deserialize<Dictionary<char, int>>(headerJson);
-
-            if (frequencyTable == null || frequencyTable.Count == 0)
-            {
-                return string.Empty; // Archivo vacío o corrupto
-            }
-
-            // 3. Reconstruir el árbol de Huffman EXACTO que se usó para comprimir
+            if (frequencyTable == null || frequencyTable.Count == 0) return string.Empty;
             var huffmanTree = BuildHuffmanTree(frequencyTable);
-
-            // 4. Leer los datos comprimidos (todo lo que viene después del mapa)
             int dataStartIndex = 4 + headerLength;
             byte padding = compressedFileBytes[dataStartIndex];
-
             var stringBuilder = new StringBuilder();
             for (int i = dataStartIndex + 1; i < compressedFileBytes.Length; i++)
             {
                 stringBuilder.Append(Convert.ToString(compressedFileBytes[i], 2).PadLeft(8, '0'));
             }
-
-            // 5. Quitar el relleno para obtener la cadena de bits original
             string bitString = stringBuilder.ToString();
             bitString = bitString.Substring(0, bitString.Length - padding);
 
-            // 6. Decodificar la cadena de bits usando el árbol
+            // Decodificamos y reportamos progreso
             var decompressedText = new StringBuilder();
             var currentNode = huffmanTree;
+            int totalBits = bitString.Length;
+            int processedBits = 0;
+
             foreach (char bit in bitString)
             {
                 currentNode = bit == '0' ? currentNode.LeftChild : currentNode.RightChild;
                 if (currentNode != null && currentNode.IsLeaf)
                 {
                     decompressedText.Append(currentNode.Simbolo);
-                    currentNode = huffmanTree; // Volver a la raíz para el siguiente símbolo
+                    currentNode = huffmanTree;
+                }
+                processedBits++;
+                if (processedBits % 1000 == 0)
+                {
+                    progress?.Report((processedBits * 100) / totalBits);
                 }
             }
+            progress?.Report(100); // Reporta el 100% al final
 
             return decompressedText.ToString();
         }

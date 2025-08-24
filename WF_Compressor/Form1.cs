@@ -85,5 +85,68 @@ namespace WF_Compressor
                 e.Effect = DragDropEffects.None; // Muestra el cursor de "prohibido"
             }
         }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// Actualiza el valor de la barra de progreso.
+        /// </summary>
+        public void UpdateProgress(int percentage)
+        {
+            if (progressBar.InvokeRequired)
+            {
+                progressBar.Invoke(new Action(() => progressBar.Value = percentage));
+            }
+            else
+            {
+                progressBar.Value = percentage;
+            }
+        }
+
+        /// <summary>
+        /// Muestra el texto de las estadísticas y hace visible la barra de progreso.
+        /// </summary>
+        public void DisplayStats(string statsText)
+        {
+            // Hacemos visible la barra y la etiqueta de stats
+            if (statsLabel.InvokeRequired)
+            {
+                statsLabel.Invoke(new Action(() => {
+                    statsLabel.Text = statsText;
+                    statsLabel.Visible = true;
+                }));
+            }
+            else
+            {
+                statsLabel.Text = statsText;
+                statsLabel.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Reinicia y oculta los controles de progreso y stats.
+        /// </summary>
+        public void ResetProgressAndStats()
+        {
+            if (progressBar.InvokeRequired)
+            {
+                progressBar.Invoke(new Action(() => {
+                    progressBar.Value = 0;
+                    progressBar.Visible = false;
+                    statsLabel.Visible = false;
+                    statsLabel.Text = "";
+                }));
+            }
+            else
+            {
+                progressBar.Value = 0;
+                progressBar.Visible = false;
+                statsLabel.Visible = false;
+                statsLabel.Text = "";
+            }
+        }
     }
 }
