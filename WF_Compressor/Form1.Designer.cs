@@ -54,7 +54,6 @@
             // 
             dragDropPanel.AccessibleName = "dragDropPanel";
             dragDropPanel.AllowDrop = true;
-            dragDropPanel.BorderStyle = BorderStyle.FixedSingle;
             dragDropPanel.Controls.Add(statsLabel);
             dragDropPanel.Controls.Add(progressBar);
             dragDropPanel.Controls.Add(statusLabel);
@@ -66,6 +65,7 @@
             dragDropPanel.TabIndex = 0;
             dragDropPanel.DragEnter += dragDropPanel_DragEnter;
             dragDropPanel.DragLeave += dragDropPanel_DragLeave;
+            dragDropPanel.Paint += dragDropPanel_Paint;
             // 
             // statsLabel
             // 
@@ -81,9 +81,9 @@
             // 
             progressBar.AccessibleName = "progressBar";
             progressBar.Dock = DockStyle.Bottom;
-            progressBar.Location = new Point(0, 288);
+            progressBar.Location = new Point(0, 290);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(798, 34);
+            progressBar.Size = new Size(800, 34);
             progressBar.TabIndex = 2;
             progressBar.Visible = false;
             progressBar.Click += progressBar1_Click;
@@ -92,9 +92,9 @@
             // 
             statusLabel.AccessibleName = "statusLabel";
             statusLabel.AutoSize = true;
-            statusLabel.Dock = DockStyle.Fill;
+            statusLabel.BackColor = Color.Transparent;
             statusLabel.Font = new Font("Times New Roman", 16F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            statusLabel.Location = new Point(0, 0);
+            statusLabel.Location = new Point(12, 9);
             statusLabel.Name = "statusLabel";
             statusLabel.Size = new Size(584, 36);
             statusLabel.TabIndex = 1;
@@ -109,9 +109,9 @@
             panel2.Controls.Add(selectFileButton);
             panel2.Controls.Add(compressButton);
             panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(0, 322);
+            panel2.Location = new Point(0, 324);
             panel2.Name = "panel2";
-            panel2.Size = new Size(798, 126);
+            panel2.Size = new Size(800, 126);
             panel2.TabIndex = 0;
             // 
             // decompressButton
@@ -121,7 +121,7 @@
             decompressButton.Enabled = false;
             decompressButton.Location = new Point(0, 40);
             decompressButton.Name = "decompressButton";
-            decompressButton.Size = new Size(796, 42);
+            decompressButton.Size = new Size(798, 42);
             decompressButton.TabIndex = 2;
             decompressButton.Text = "Descomprimir";
             decompressButton.UseVisualStyleBackColor = true;
@@ -134,7 +134,7 @@
             selectFileButton.Dock = DockStyle.Top;
             selectFileButton.Location = new Point(0, 0);
             selectFileButton.Name = "selectFileButton";
-            selectFileButton.Size = new Size(796, 40);
+            selectFileButton.Size = new Size(798, 40);
             selectFileButton.TabIndex = 1;
             selectFileButton.Text = "Seleccionar Archivo...";
             selectFileButton.UseVisualStyleBackColor = true;
@@ -148,7 +148,7 @@
             compressButton.Enabled = false;
             compressButton.Location = new Point(0, 82);
             compressButton.Name = "compressButton";
-            compressButton.Size = new Size(796, 42);
+            compressButton.Size = new Size(798, 42);
             compressButton.TabIndex = 0;
             compressButton.Text = "Comprimir";
             compressButton.UseVisualStyleBackColor = true;

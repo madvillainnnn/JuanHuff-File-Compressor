@@ -6,7 +6,7 @@ Un compresor de archivos minimalista y potente basado en el algoritmo de Huffman
 
 ## 📝 Descripción
 
-**Byte Weaver** es una aplicación de escritorio creada como un proyecto para explorar los fundamentos de los algoritmos de compresión sin pérdida. Permite a los usuarios comprimir archivos de texto de forma rápida e intuitiva a través de una interfaz gráfica simple con funcionalidad de arrastrar y soltar.
+**JuanHuff File Compressor** es una aplicación de escritorio creada como un proyecto para explorar los fundamentos de los algoritmos de compresión sin pérdida. Permite a los usuarios comprimir archivos de texto de forma rápida e intuitiva a través de una interfaz gráfica simple con funcionalidad de arrastrar y soltar.
 
 ---
 

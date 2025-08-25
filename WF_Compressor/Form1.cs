@@ -212,5 +212,29 @@ namespace WF_Compressor
             decompressButton.BackColor = SystemColors.Control;
             this.Cursor = Cursors.Default;
         }
+
+        private void dragDropPanel_Paint(object sender, PaintEventArgs e)
+        {
+            // Obtenemos el "lienzo" sobre el que vamos a dibujar
+            Graphics g = e.Graphics;
+
+            // Creamos nuestro "lápiz" discontinuo, ahora más grueso
+            using (Pen dashPen = new Pen(Color.DimGray, 5)) // Grosor aumentado a 5. ¡Puedes cambiarlo!
+            {
+                // Le decimos que el estilo de la línea sea discontinuo
+                dashPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+
+                // Usamos ClientRectangle para obtener los límites del panel, lo que
+                // soluciona el problema al maximizar la ventana.
+                Rectangle rect = this.dragDropPanel.ClientRectangle;
+
+                // Un pequeño truco pro: reducimos el tamaño del rectángulo un poco
+                // para que el borde grueso no se corte en los extremos.
+                rect.Inflate(-3, -3); // Puedes ajustar este valor si el grosor cambia
+
+                // ¡Y finalmente, dibujamos el rectángulo!
+                g.DrawRectangle(dashPen, rect);
+            }
+        }
     }
 }
