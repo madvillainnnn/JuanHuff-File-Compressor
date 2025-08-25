@@ -65,16 +65,16 @@
             dragDropPanel.Size = new Size(800, 450);
             dragDropPanel.TabIndex = 0;
             dragDropPanel.DragEnter += dragDropPanel_DragEnter;
+            dragDropPanel.DragLeave += dragDropPanel_DragLeave;
             // 
             // statsLabel
             // 
             statsLabel.AccessibleName = "statsLabel";
-            statsLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             statsLabel.AutoSize = true;
-            statsLabel.Font = new Font("Arial Rounded MT Bold", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            statsLabel.Location = new Point(536, 218);
+            statsLabel.Font = new Font("Times New Roman", 16F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            statsLabel.Location = new Point(-1, 54);
             statsLabel.Name = "statsLabel";
-            statsLabel.Size = new Size(0, 28);
+            statsLabel.Size = new Size(0, 36);
             statsLabel.TabIndex = 3;
             // 
             // progressBar
@@ -125,6 +125,8 @@
             decompressButton.TabIndex = 2;
             decompressButton.Text = "Descomprimir";
             decompressButton.UseVisualStyleBackColor = true;
+            decompressButton.MouseEnter += decompressButton_MouseEnter;
+            decompressButton.MouseLeave += decompressButton_MouseLeave;
             // 
             // selectFileButton
             // 
@@ -136,6 +138,8 @@
             selectFileButton.TabIndex = 1;
             selectFileButton.Text = "Seleccionar Archivo...";
             selectFileButton.UseVisualStyleBackColor = true;
+            selectFileButton.MouseEnter += selectFileButton_MouseEnter;
+            selectFileButton.MouseLeave += selectFileButton_MouseLeave;
             // 
             // compressButton
             // 
@@ -148,6 +152,8 @@
             compressButton.TabIndex = 0;
             compressButton.Text = "Comprimir";
             compressButton.UseVisualStyleBackColor = true;
+            compressButton.MouseEnter += compressButton_MouseEnter;
+            compressButton.MouseLeave += compressButton_MouseLeave;
             // 
             // Form1
             // 
@@ -156,7 +162,7 @@
             ClientSize = new Size(800, 450);
             Controls.Add(dragDropPanel);
             Name = "Form1";
-            Text = "Form1";
+            Text = "JuanHuff File Compressor";
             dragDropPanel.ResumeLayout(false);
             dragDropPanel.PerformLayout();
             panel2.ResumeLayout(false);
